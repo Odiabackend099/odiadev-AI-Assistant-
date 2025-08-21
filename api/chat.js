@@ -1,4 +1,4 @@
-// api/chat.js - CORRECT FORMAT for ODIADEV Chat Service
+// api/chat.js - Use USER API key for ODIADEV service
 const { validKey, getKey } = require('./_lib/auth');
 
 module.exports = async function handler(req, res) {
@@ -32,18 +32,18 @@ module.exports = async function handler(req, res) {
 
     // Get backend service details
     const ttsServiceUrl = process.env.TTS_SERVICE_URL;
-    const ttsServiceKey = process.env.TTS_SERVICE_KEY;
     
     // Try to use your ODIADEV agent service first
-    if (ttsServiceUrl && ttsServiceKey) {
+    if (ttsServiceUrl) {
       try {
         console.log(`Calling ODIADEV agent: ${ttsServiceUrl}/agent`);
+        console.log(`Using user API key: ${userApiKey}`);
         
         const response = await fetch(`${ttsServiceUrl}/agent`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': ttsServiceKey
+            'x-api-key': userApiKey  // Use user's API key
           },
           body: JSON.stringify({ text })
         });
@@ -55,7 +55,8 @@ module.exports = async function handler(req, res) {
           console.log(`ODIADEV agent response: ${reply}`);
           return res.status(200).json({ reply });
         } else {
-          console.log(`ODIADEV agent failed: ${response.status}`);
+          const errorText = await response.text();
+          console.log(`ODIADEV agent failed: ${response.status} - ${errorText}`);
         }
       } catch (error) {
         console.log(`ODIADEV agent error: ${error.message}`);
@@ -69,7 +70,7 @@ module.exports = async function handler(req, res) {
     if (!anthropicKey) {
       // Ultimate fallback
       return res.status(200).json({ 
-        reply: `I hear you saying: "${text}". I'm a Nigerian AI assistant ready to help!` 
+        reply: `I hear you saying: "${text}". I'm your Nigerian AI assistant ready to help! 🇳🇬` 
       });
     }
 
@@ -85,7 +86,7 @@ module.exports = async function handler(req, res) {
       body: JSON.stringify({
         model,
         max_tokens: 512,
-        system: 'You are ODIADEV AI assistant for Nigerian businesses. Keep replies concise, helpful, and friendly. Use simple Nigerian English.',
+        system: 'You are ODIADEV AI assistant for Nigerian businesses. Keep replies concise, helpful, and friendly. Use simple Nigerian English when appropriate.',
         messages: [{ role: 'user', content: text }]
       })
     });

@@ -1,4 +1,4 @@
-// api/tts.js - CORRECT FORMAT for ODIADEV TTS Service
+// api/tts.js - Use USER API key for TTS service
 const { validKey, getKey } = require('./_lib/auth');
 
 module.exports = async function handler(req, res) {
@@ -36,9 +36,8 @@ module.exports = async function handler(req, res) {
 
     // Get backend service details
     const ttsServiceUrl = process.env.TTS_SERVICE_URL;
-    const ttsServiceKey = process.env.TTS_SERVICE_KEY;
     
-    if (!ttsServiceUrl || !ttsServiceKey) {
+    if (!ttsServiceUrl) {
       return res.status(503).json({ 
         error: 'TTS service not configured',
         fallback: true 
@@ -61,12 +60,13 @@ module.exports = async function handler(req, res) {
     const ttsUrl = `${ttsServiceUrl}/speak?text=${encodedText}&voice=${encodedVoice}`;
 
     console.log(`Calling TTS service: ${ttsUrl}`);
+    console.log(`Using user API key: ${userApiKey}`);
 
-    // Make the request with correct headers
+    // Make the request with user's API key (not service key!)
     const response = await fetch(ttsUrl, {
       method: 'GET',
       headers: {
-        'x-api-key': ttsServiceKey  // Use x-api-key, not Authorization
+        'x-api-key': userApiKey  // Use the user's API key directly
       }
     });
 
