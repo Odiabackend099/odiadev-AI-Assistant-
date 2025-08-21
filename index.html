@@ -6,51 +6,714 @@
   <title>ODIADEV - Voice AI for Africa</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23d4af37'/%3E%3Ctext x='16' y='21' font-size='14' text-anchor='middle' fill='%231a1f36' font-family='Arial'%3EO%3C/text%3E%3C/svg%3E">
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1a1f36;color:#fff;height:100vh;display:flex;flex-direction:column}
-    .header{background:linear-gradient(135deg,#1a1f36 0%,#2d3561 100%);padding:20px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:space-between}
-    .logo{display:flex;align-items:center;gap:15px}
-    .logo-icon{width:50px;height:50px;background:linear-gradient(135deg,#4a90e2 0%,#7b68ee 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px}
-    .logo-text h1{font-size:2em;font-weight:700;color:#d4af37;margin:0}
-    .logo-text p{color:#b0c4de;font-size:.9em;margin:0}
-    .status-indicator{display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(0,255,136,.1);border-radius:20px;font-size:.9em}
-    .status-dot{width:8px;height:8px;background:#00ff88;border-radius:50%;animation:pulse 2s infinite}
-    @keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
-    .chat-container{flex:1;display:flex;flex-direction:column;max-width:800px;margin:0 auto;width:100%;padding:0 20px}
-    .api-key-section{background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.3);border-radius:12px;padding:16px;margin:20px 0;text-align:center}
-    .api-key-input{width:100%;max-width:400px;padding:10px 16px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.05);color:#fff;font-size:14px;margin:8px 0}
-    .api-key-input::placeholder{color:rgba(255,255,255,.5)}
-    .api-key-button{background:#d4af37;color:#1a1f36;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:500;margin-left:8px}
-    .api-key-button:hover{background:#f4d03f}
-    .chat-messages{flex:1;overflow-y:auto;padding:30px 0;display:flex;flex-direction:column;gap:20px}
-    .message{display:flex;gap:12px;max-width:80%;animation:slideIn .3s ease}
-    @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-    .message.user{align-self:flex-end;flex-direction:row-reverse}
-    .message.assistant{align-self:flex-start}
-    .message-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-    .message.user .message-avatar{background:linear-gradient(135deg,#d4af37 0%,#f4d03f 100%)}
-    .message.assistant .message-avatar{background:linear-gradient(135deg,#4a90e2 0%,#7b68ee 100%)}
-    .message-content{background:rgba(255,255,255,.05);padding:16px 20px;border-radius:18px;line-height:1.5;position:relative;white-space:pre-wrap}
-    .message.user .message-content{background:linear-gradient(135deg,#d4af37 0%,#f4d03f 100%);color:#1a1f36}
-    .message.assistant .message-content{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
-    .input-container{padding:12px 0 24px;border-top:1px solid rgba(255,255,255,.1)}
-    .input-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-    .toggle{display:flex;align-items:center;gap:8px;font-size:.9em;color:#b0c4de}
-    .input-wrapper{display:flex;align-items:flex-end;gap:12px;background:rgba(255,255,255,.05);border-radius:24px;padding:16px 20px;border:1px solid rgba(255,255,255,.1);transition:all .3s ease}
-    .input-wrapper:focus-within{border-color:#d4af37;box-shadow:0 0 0 3px rgba(212,175,55,.1)}
-    .message-input{flex:1;background:none;border:none;color:#fff;font-size:16px;line-height:1.5;resize:none;outline:none;min-height:24px;max-height:120px;font-family:inherit}
-    .message-input::placeholder{color:rgba(255,255,255,.5)}
-    .send-button{width:32px;height:32px;border:none;background:linear-gradient(135deg,#d4af37 0%,#f4d03f 100%);color:#1a1f36;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s ease;font-size:16px}
-    .send-button:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(212,175,55,.3)}
-    .send-button:disabled{opacity:.5;cursor:not-allowed;transform:none}
-    .welcome-message{text-align:center;padding:40px 20px;color:rgba(255,255,255,.7)}
-    .welcome-message h2{color:#d4af37;margin-bottom:16px;font-size:1.5em}
-    .welcome-message p{margin-bottom:12px;line-height:1.6}
-    .error-message{background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);color:#ff6b7a;padding:12px 16px;border-radius:12px;margin:10px 0;font-size:.9em}
-    .success{background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);color:#00ff88;padding:12px 16px;border-radius:12px;margin:10px 0;font-size:.9em}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1f36;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ==================== HEADER ==================== */
+    .header {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    .logo-text h1 {
+      font-size: 1.5em;
+      font-weight: 700;
+      color: #d4af37;
+      margin: 0;
+    }
+
+    .logo-text p {
+      color: #b0c4de;
+      font-size: 0.8em;
+      margin: 0;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 16px;
+      font-size: 0.85em;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #00ff88;
+      border-radius: 50%;
+      animation: statusPulse 2s infinite;
+    }
+
+    @keyframes statusPulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.2); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* ==================== API KEY SECTION ==================== */
+    .api-key-section {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      max-width: 400px;
+      width: 90%;
+      z-index: 100;
+    }
+
+    .api-key-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 14px;
+      margin: 12px 0;
+      backdrop-filter: blur(5px);
+    }
+
+    .api-key-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .api-key-button {
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      color: #1a1f36;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    .api-key-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    }
+
+    /* ==================== MAIN CHAT INTERFACE ==================== */
+    .chat-interface {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .persona-selector {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      overflow-x: auto;
+    }
+
+    .persona-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      backdrop-filter: blur(10px);
+      min-width: 120px;
+      text-align: center;
+    }
+
+    .persona-card.active {
+      background: rgba(212, 175, 55, 0.2);
+      border-color: rgba(212, 175, 55, 0.5);
+      color: #d4af37;
+    }
+
+    .persona-card:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 85%;
+      animation: messageSlide 0.3s ease;
+    }
+
+    @keyframes messageSlide {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+    }
+
+    .message-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .message.user .message-avatar {
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      color: #1a1f36;
+    }
+
+    .message.assistant .message-avatar {
+      background: linear-gradient(135deg, #4a90e2 0%, #7b68ee 100%);
+      color: white;
+    }
+
+    .message-content {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 12px 16px;
+      border-radius: 18px;
+      line-height: 1.5;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .message.user .message-content {
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      color: #1a1f36;
+      border: none;
+    }
+
+    .welcome-message {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .welcome-message h2 {
+      color: #d4af37;
+      margin-bottom: 16px;
+      font-size: 1.8em;
+    }
+
+    .welcome-logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #4a90e2 0%, #7b68ee 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 24px;
+      opacity: 0.7;
+    }
+
+    /* ==================== CHAT INPUT ==================== */
+    .chat-input-container {
+      padding: 16px 20px 20px;
+      background: rgba(255, 255, 255, 0.02);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-input-wrapper {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .chat-input-wrapper:focus-within {
+      border-color: #d4af37;
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    .chat-input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+      min-height: 24px;
+      max-height: 120px;
+      font-family: inherit;
+    }
+
+    .chat-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .voice-mode-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      border: none;
+      color: #1a1f36;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    .voice-mode-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+    }
+
+    .voice-mode-button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1f36'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .waveform-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+      width: 16px;
+      height: 12px;
+    }
+
+    .waveform-bar {
+      width: 2px;
+      background: #1a1f36;
+      border-radius: 1px;
+      animation: waveformPulse 1.5s ease-in-out infinite;
+    }
+
+    .waveform-bar:nth-child(1) {
+      height: 6px;
+      animation-delay: 0s;
+    }
+
+    .waveform-bar:nth-child(2) {
+      height: 10px;
+      animation-delay: 0.1s;
+    }
+
+    .waveform-bar:nth-child(3) {
+      height: 8px;
+      animation-delay: 0.2s;
+    }
+
+    .waveform-bar:nth-child(4) {
+      height: 12px;
+      animation-delay: 0.3s;
+    }
+
+    .waveform-bar:nth-child(5) {
+      height: 6px;
+      animation-delay: 0.4s;
+    }
+
+    @keyframes waveformPulse {
+      0%, 100% { opacity: 0.6; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.3); }
+    }
+
+    .send-button {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      border: none;
+      color: #1a1f36;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    .send-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+    }
+
+    .send-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ==================== VOICE-ONLY INTERFACE ==================== */
+    .voice-interface {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #1a1f36;
+      display: none;
+      flex-direction: column;
+      z-index: 200;
+    }
+
+    .voice-interface.active {
+      display: flex;
+    }
+
+    .voice-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+    }
+
+    .voice-persona-selector {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .voice-persona-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      font-size: 0.9em;
+    }
+
+    .voice-persona-card.active {
+      background: rgba(212, 175, 55, 0.2);
+      border-color: rgba(212, 175, 55, 0.5);
+      color: #d4af37;
+    }
+
+    .large-voice-button {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4a90e2 0%, #7b68ee 100%);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      color: white;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 20px 60px rgba(74, 144, 226, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .large-voice-button::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .large-voice-button:hover::before {
+      opacity: 1;
+    }
+
+    .large-voice-button.listening {
+      animation: listeningPulse 2s ease-in-out infinite;
+      background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+      box-shadow: 0 20px 60px rgba(212, 175, 55, 0.4);
+    }
+
+    .large-voice-button.processing {
+      animation: processingRotate 2s linear infinite;
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+      box-shadow: 0 20px 60px rgba(243, 156, 18, 0.4);
+    }
+
+    @keyframes listeningPulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+      }
+      50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 30px rgba(212, 175, 55, 0);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+      }
+    }
+
+    @keyframes processingRotate {
+      0% { transform: rotate(0deg) scale(1.02); }
+      50% { transform: rotate(180deg) scale(1.05); }
+      100% { transform: rotate(360deg) scale(1.02); }
+    }
+
+    .voice-transcript {
+      position: absolute;
+      bottom: 120px;
+      left: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 16px 20px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s ease;
+    }
+
+    .voice-transcript.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .voice-transcript-text {
+      font-size: 1.1em;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    .voice-transcript-text.interim {
+      color: rgba(255, 255, 255, 0.6);
+      font-style: italic;
+    }
+
+    .voice-controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .voice-control-button {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .voice-control-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .voice-control-button.active {
+      background: rgba(212, 175, 55, 0.3);
+      border-color: rgba(212, 175, 55, 0.5);
+      color: #d4af37;
+    }
+
+    .voice-control-button.close {
+      background: rgba(255, 71, 87, 0.2);
+      border-color: rgba(255, 71, 87, 0.4);
+      color: #ff4757;
+    }
+
+    /* ==================== UTILITY CLASSES ==================== */
+    .hidden {
+      display: none !important;
+    }
+
+    .error-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 71, 87, 0.9);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 0.9em;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      animation: errorSlide 0.3s ease;
+    }
+
+    @keyframes errorSlide {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    .success-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 255, 136, 0.9);
+      color: white;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-size: 0.9em;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      animation: successSlide 0.3s ease;
+    }
+
+    @keyframes successSlide {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 768px) {
+      .large-voice-button {
+        width: 160px;
+        height: 160px;
+        font-size: 40px;
+      }
+
+      .voice-transcript {
+        bottom: 100px;
+        left: 16px;
+        right: 16px;
+      }
+
+      .message {
+        max-width: 95%;
+      }
+
+      .persona-selector {
+        padding: 12px 16px;
+      }
+
+      .voice-persona-selector {
+        left: 16px;
+        right: 16px;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- HEADER -->
   <div class="header">
     <div class="logo">
       <div class="logo-icon">🌍</div>
@@ -65,169 +728,603 @@
     </div>
   </div>
 
-  <div class="chat-container">
-    <!-- API KEY -->
-    <div class="api-key-section" id="apiKeySection">
-      <h3 style="color:#d4af37;margin-bottom:10px;">🔐 Enter Your ODIADEV API Key</h3>
-      <p style="font-size:.9em;margin-bottom:15px;">Your workspace key from the ODIADEV dashboard</p>
-      <div>
-        <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Enter your API key" />
-        <button class="api-key-button" id="saveKeyBtn">Save Key</button>
-      </div>
-    </div>
-
-    <div class="chat-messages" id="chatMessages">
-      <div class="welcome-message">
-        <h2>Welcome to ODIADEV AI</h2>
-        <p>Your intelligent Nigerian assistant powered by advanced voice AI.</p>
-        <p>Enter your API key above to start chatting!</p>
-      </div>
-    </div>
-
-    <div class="input-container">
-      <div class="input-row">
-        <label class="toggle"><input type="checkbox" id="speakToggle" checked/> 🔊 Speak replies</label>
-      </div>
-      <div class="input-wrapper">
-        <textarea class="message-input" id="messageInput" placeholder="Enter your API key first..." rows="1" disabled></textarea>
-        <button class="send-button" id="sendButton" title="Send message" disabled>➤</button>
-      </div>
+  <!-- API KEY SECTION -->
+  <div class="api-key-section" id="apiKeySection">
+    <h3 style="color:#d4af37;margin-bottom:10px;">🔐 Enter Your ODIADEV API Key</h3>
+    <p style="font-size:0.9em;margin-bottom:15px;color:rgba(255,255,255,0.8);">Your workspace key from the ODIADEV dashboard</p>
+    <div>
+      <input type="password" class="api-key-input" id="apiKeyInput" placeholder="Enter your API key" />
+      <button class="api-key-button" id="saveKeyBtn">Save Key</button>
     </div>
   </div>
 
-  <script>
-    // ---------- State ----------
-    let API_KEY = null;
-    let isProcessing = false;
-    const speakReplies = () => document.getElementById('speakToggle').checked;
+  <!-- MAIN CHAT INTERFACE -->
+  <div class="chat-interface" id="chatInterface">
+    
+    <!-- PERSONA SELECTOR -->
+    <div class="persona-selector">
+      <div class="persona-card active" data-persona="assistant">
+        <div>🤖 Assistant</div>
+      </div>
+      <div class="persona-card" data-persona="therapist">
+        <div>💚 "Therapist"</div>
+      </div>
+      <div class="persona-card" data-persona="storyteller">
+        <div>📖 Storyteller</div>
+      </div>
+    </div>
 
-    // ---------- DOM ----------
-    const chatMessages = document.getElementById('chatMessages');
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
+    <!-- CHAT MESSAGES -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="welcome-message">
+        <div class="welcome-logo">🌍</div>
+        <h2>Welcome to ODIADEV AI</h2>
+        <p>Your intelligent Nigerian assistant powered by advanced voice AI.</p>
+        <p>Type your message below or switch to voice mode!</p>
+      </div>
+    </div>
+
+    <!-- CHAT INPUT -->
+    <div class="chat-input-container">
+      <div class="chat-input-wrapper">
+        <textarea class="chat-input" id="chatInput" placeholder="Ask anything..." rows="1" disabled></textarea>
+        <button class="voice-mode-button" id="voiceModeBtn" title="Switch to Voice Mode" disabled>
+          <div class="waveform-icon">
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+            <div class="waveform-bar"></div>
+          </div>
+        </button>
+        <button class="send-button" id="sendBtn" title="Send message" disabled>➤</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- VOICE-ONLY INTERFACE -->
+  <div class="voice-interface" id="voiceInterface">
+    
+    <!-- VOICE HEADER (reuse same header) -->
+    <div class="header">
+      <div class="logo">
+        <div class="logo-icon">🌍</div>
+        <div class="logo-text">
+          <h1>ODIADEV</h1>
+          <p>Voice Mode</p>
+        </div>
+      </div>
+      <div class="status-indicator">
+        <div class="status-dot"></div>
+        <span>Voice Ready</span>
+      </div>
+    </div>
+
+    <div class="voice-main">
+      
+      <!-- VOICE PERSONA SELECTOR -->
+      <div class="voice-persona-selector">
+        <div class="voice-persona-card active" data-persona="assistant">Assistant</div>
+        <div class="voice-persona-card" data-persona="therapist">"Therapist"</div>
+        <div class="voice-persona-card" data-persona="storyteller">Storyteller</div>
+      </div>
+
+      <!-- LARGE VOICE BUTTON -->
+      <button class="large-voice-button" id="largeVoiceBtn">
+        <span id="voiceButtonIcon">💬</span>
+      </button>
+
+      <!-- TRANSCRIPT DISPLAY -->
+      <div class="voice-transcript" id="voiceTranscript">
+        <div class="voice-transcript-text" id="voiceTranscriptText">
+          Tap the button and start speaking...
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VOICE CONTROLS -->
+    <div class="voice-controls">
+      <button class="voice-control-button" id="voiceMicBtn" title="Toggle microphone">🎙️</button>
+      <button class="voice-control-button active" id="voiceSpeakerBtn" title="Toggle speaker">🔊</button>
+      <button class="voice-control-button" id="voiceMenuBtn" title="Menu">⋯</button>
+      <button class="voice-control-button close" id="voiceCloseBtn" title="Back to chat">✕</button>
+    </div>
+
+  </div>
+
+  <script>
+    // ==================== STATE ====================
+    let API_KEY = null;
+    let isRecording = false;
+    let isProcessing = false;
+    let recognition = null;
+    let currentPersona = 'assistant';
+    let speechEnabled = true;
+    let conversationHistory = [];
+
+    // ==================== DOM ELEMENTS ====================
     const apiKeySection = document.getElementById('apiKeySection');
     const apiKeyInput = document.getElementById('apiKeyInput');
     const saveKeyBtn = document.getElementById('saveKeyBtn');
-    const conn = document.getElementById('connectionStatus');
+    const chatInterface = document.getElementById('chatInterface');
+    const voiceInterface = document.getElementById('voiceInterface');
+    
+    // Chat Interface Elements
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const voiceModeBtn = document.getElementById('voiceModeBtn');
+    const personaCards = document.querySelectorAll('.persona-card');
+    
+    // Voice Interface Elements
+    const largeVoiceBtn = document.getElementById('largeVoiceBtn');
+    const voiceButtonIcon = document.getElementById('voiceButtonIcon');
+    const voiceTranscript = document.getElementById('voiceTranscript');
+    const voiceTranscriptText = document.getElementById('voiceTranscriptText');
+    const voicePersonaCards = document.querySelectorAll('.voice-persona-card');
+    const voiceCloseBtn = document.getElementById('voiceCloseBtn');
+    const voiceSpeakerBtn = document.getElementById('voiceSpeakerBtn');
+    
+    const connectionStatus = document.getElementById('connectionStatus');
 
-    // Restore saved key
-    const saved = sessionStorage.getItem('ODIADEV_API_KEY');
-    if (saved) {
-      API_KEY = saved;
-      apiKeySection.style.display = 'none';
-      enableChat();
+    // ==================== INITIALIZATION ====================
+    
+    // Check for saved API key
+    const savedKey = sessionStorage.getItem('ODIADEV_API_KEY');
+    if (savedKey) {
+      API_KEY = savedKey;
+      hideApiKeySection();
+      enableInterfaces();
     }
 
-    // Health ping
-    (async () => {
-      try {
-        conn.textContent = 'Pinging…';
-        const r = await fetch('/api/health');
-        conn.textContent = r.ok ? 'Ready' : 'Degraded';
-      } catch(e) {
-        conn.textContent = 'Offline';
-      }
-    })();
+    // Health check
+    checkHealth();
+    
+    // Initialize speech recognition
+    initializeSpeechRecognition();
 
-    saveKeyBtn.addEventListener('click', () => {
-      const key = (apiKeyInput.value || '').trim();
-      if (!key) return showError('Enter a valid API key');
+    // ==================== EVENT LISTENERS ====================
+    
+    // API Key
+    saveKeyBtn.addEventListener('click', handleApiKeySave);
+    
+    // Chat Interface
+    sendBtn.addEventListener('click', handleSendMessage);
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSendMessage();
+      }
+    });
+    voiceModeBtn.addEventListener('click', switchToVoiceMode);
+    
+    // Voice Interface
+    largeVoiceBtn.addEventListener('click', handleVoiceButtonClick);
+    voiceCloseBtn.addEventListener('click', switchToChatMode);
+    voiceSpeakerBtn.addEventListener('click', toggleSpeech);
+    
+    // Persona Selection
+    personaCards.forEach(card => {
+      card.addEventListener('click', () => selectPersona(card.dataset.persona, false));
+    });
+    voicePersonaCards.forEach(card => {
+      card.addEventListener('click', () => selectPersona(card.dataset.persona, true));
+    });
+
+    // Auto-resize textarea
+    chatInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // ==================== API KEY MANAGEMENT ====================
+    
+    function handleApiKeySave() {
+      const key = apiKeyInput.value.trim();
+      if (!key) {
+        showError('Please enter a valid API key');
+        return;
+      }
+      
       API_KEY = key;
       sessionStorage.setItem('ODIADEV_API_KEY', API_KEY);
-      apiKeySection.style.display = 'none';
-      enableChat();
-      showSuccess('API key set. You can chat now.');
-    });
-
-    function enableChat(){
-      messageInput.disabled = false;
-      sendButton.disabled = false;
-      messageInput.placeholder = 'Type your message…';
-      messageInput.focus();
+      hideApiKeySection();
+      enableInterfaces();
+      showSuccess('API key saved! You can now chat and use voice commands.');
     }
 
-    sendButton.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-    });
+    function hideApiKeySection() {
+      apiKeySection.style.display = 'none';
+    }
 
-    async function sendMessage(){
-      if (!API_KEY) { return showError('Please enter your API key first'); }
-      const text = (messageInput.value || '').trim();
-      if (!text || isProcessing) return;
-      addMessage(text, 'user');
-      messageInput.value = '';
-      isProcessing = true;
-      sendButton.disabled = true;
+    function enableInterfaces() {
+      chatInput.disabled = false;
+      sendBtn.disabled = false;
+      voiceModeBtn.disabled = false;
+      chatInput.placeholder = 'Ask anything...';
+      chatInput.focus();
+    }
 
-      try {
-        const reply = await chat(text);
-        addMessage(reply, 'assistant');
-        if (speakReplies()) { try { await speak(reply); } catch(e) {} }
-      } catch (err) {
-        showError(err.message || 'Failed to get response.');
-      } finally {
-        isProcessing = false;
-        sendButton.disabled = false;
-        messageInput.focus();
+    // ==================== INTERFACE SWITCHING ====================
+    
+    function switchToVoiceMode() {
+      chatInterface.style.display = 'none';
+      voiceInterface.classList.add('active');
+    }
+
+    function switchToChatMode() {
+      voiceInterface.classList.remove('active');
+      chatInterface.style.display = 'flex';
+    }
+
+    // ==================== PERSONA MANAGEMENT ====================
+    
+    function selectPersona(persona, isVoiceMode) {
+      currentPersona = persona;
+      
+      if (isVoiceMode) {
+        voicePersonaCards.forEach(card => {
+          card.classList.toggle('active', card.dataset.persona === persona);
+        });
+      } else {
+        personaCards.forEach(card => {
+          card.classList.toggle('active', card.dataset.persona === persona);
+        });
+      }
+      
+      // Update conversation context
+      showSuccess(`Switched to ${persona} mode`);
+    }
+
+    // ==================== SPEECH RECOGNITION ====================
+    
+    function initializeSpeechRecognition() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.warn('Speech recognition not supported');
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-NG';
+      
+      recognition.onstart = function() {
+        isRecording = true;
+        updateVoiceButton();
+        voiceTranscript.classList.add('active');
+        voiceTranscriptText.textContent = 'Listening...';
+        voiceTranscriptText.className = 'voice-transcript-text interim';
+      };
+      
+      recognition.onresult = function(event) {
+        let finalTranscript = '';
+        let interimTranscript = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        
+        const displayText = finalTranscript || interimTranscript;
+        voiceTranscriptText.textContent = displayText || 'Listening...';
+        voiceTranscriptText.className = finalTranscript ? 'voice-transcript-text' : 'voice-transcript-text interim';
+        
+        if (finalTranscript) {
+          handleSpeechResult(finalTranscript.trim());
+        }
+      };
+      
+      recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        handleSpeechError(event.error);
+      };
+      
+      recognition.onend = function() {
+        isRecording = false;
+        updateVoiceButton();
+      };
+    }
+
+    function handleSpeechResult(transcript) {
+      if (!transcript) return;
+      
+      stopRecording();
+      processUserInput(transcript, true);
+    }
+
+    function handleSpeechError(error) {
+      isRecording = false;
+      updateVoiceButton();
+      
+      switch(error) {
+        case 'no-speech':
+          voiceTranscriptText.textContent = 'No speech detected. Try again.';
+          break;
+        case 'audio-capture':
+          showError('Microphone not accessible. Please check permissions.');
+          break;
+        case 'not-allowed':
+          showError('Microphone permission denied.');
+          break;
+        default:
+          showError(`Speech recognition error: ${error}`);
       }
     }
 
-    async function chat(text){
-      const r = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
-        body: JSON.stringify({ text })
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const j = await r.json();
-      return j.reply || '(no reply)';
+    // ==================== VOICE BUTTON HANDLING ====================
+    
+    function handleVoiceButtonClick() {
+      if (!API_KEY) {
+        showError('Please enter your API key first');
+        return;
+      }
+
+      if (isProcessing) {
+        return;
+      }
+
+      if (isRecording) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
     }
 
-    async function speak(text){
-      const r = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
-        body: JSON.stringify({ text, voice: 'nigerian-english' })
-      });
-      if (!r.ok) throw new Error(await r.text());
-      const buf = await r.arrayBuffer();
-      const blob = new Blob([buf], { type: 'audio/mpeg' });
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      await audio.play();
+    function startRecording() {
+      if (!recognition) {
+        showError('Speech recognition not available');
+        return;
+      }
+
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('Failed to start recording:', error);
+        showError('Failed to start recording');
+      }
     }
 
-    function addMessage(text, type){
-      const wrap = document.createElement('div');
-      wrap.className = 'message ' + (type || 'assistant');
+    function stopRecording() {
+      if (recognition && isRecording) {
+        recognition.stop();
+      }
+    }
+
+    function updateVoiceButton() {
+      largeVoiceBtn.className = 'large-voice-button';
+      
+      if (isProcessing) {
+        largeVoiceBtn.classList.add('processing');
+        voiceButtonIcon.textContent = '⏳';
+      } else if (isRecording) {
+        largeVoiceBtn.classList.add('listening');
+        voiceButtonIcon.textContent = '⏹️';
+      } else {
+        voiceButtonIcon.textContent = '💬';
+      }
+    }
+
+    // ==================== CHAT HANDLING ====================
+    
+    function handleSendMessage() {
+      const text = chatInput.value.trim();
+      if (!text || isProcessing) return;
+      
+      if (!API_KEY) {
+        showError('Please enter your API key first');
+        return;
+      }
+      
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      processUserInput(text, false);
+    }
+
+    async function processUserInput(text, isVoice) {
+      if (!text.trim()) return;
+      
+      isProcessing = true;
+      if (isVoice) {
+        updateVoiceButton();
+        voiceTranscriptText.textContent = 'Processing...';
+      } else {
+        sendBtn.disabled = true;
+      }
+      
+      // Add user message to chat
+      addMessage(text, 'user');
+      
+      try {
+        const response = await sendToAI(text);
+        addMessage(response, 'assistant');
+        
+        if (speechEnabled && isVoice) {
+          await speakText(response);
+        }
+        
+        if (isVoice) {
+          voiceTranscriptText.textContent = 'Tap the button and start speaking...';
+        }
+      } catch (error) {
+        console.error('Error processing input:', error);
+        showError('Failed to process your request');
+        if (isVoice) {
+          voiceTranscriptText.textContent = 'Error occurred. Try again.';
+        }
+      } finally {
+        isProcessing = false;
+        if (isVoice) {
+          updateVoiceButton();
+        } else {
+          sendBtn.disabled = false;
+          chatInput.focus();
+        }
+      }
+    }
+
+    async function sendToAI(text) {
+      const systemPrompt = getPersonaPrompt(currentPersona);
+      
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': API_KEY
+        },
+        body: JSON.stringify({ 
+          text: `${systemPrompt}\n\nUser: ${text}` 
+        })
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to get AI response');
+      }
+      
+      const data = await response.json();
+      return data.reply || 'Sorry, I couldn\'t generate a response.';
+    }
+
+    function getPersonaPrompt(persona) {
+      switch(persona) {
+        case 'therapist':
+          return 'You are a supportive and empathetic therapist. Provide compassionate, helpful guidance while being mindful that you are not a replacement for professional mental health care.';
+        case 'storyteller':
+          return 'You are a creative storyteller. Craft engaging narratives, share interesting stories, and help users explore their creativity through storytelling.';
+        default:
+          return 'You are the ODIADEV Voice AI assistant for Nigerian businesses. Keep replies concise, clear, and Naija-friendly. Avoid corporate jargon.';
+      }
+    }
+
+    async function speakText(text) {
+      if (!speechEnabled) return;
+      
+      try {
+        const response = await fetch('/api/tts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': API_KEY
+          },
+          body: JSON.stringify({ 
+            text, 
+            voice: 'nigerian-english' 
+          })
+        });
+        
+        if (response.ok) {
+          const audioBuffer = await response.arrayBuffer();
+          const blob = new Blob([audioBuffer], { type: 'audio/mpeg' });
+          const audioUrl = URL.createObjectURL(blob);
+          const audio = new Audio(audioUrl);
+          
+          audio.onended = () => URL.revokeObjectURL(audioUrl);
+          await audio.play();
+        } else {
+          // Fallback to browser TTS
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'en-NG';
+          speechSynthesis.speak(utterance);
+        }
+      } catch (error) {
+        console.error('TTS error:', error);
+        // Silent fallback to browser TTS
+        try {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'en-NG';
+          speechSynthesis.speak(utterance);
+        } catch (fallbackError) {
+          console.error('Fallback TTS also failed:', fallbackError);
+        }
+      }
+    }
+
+    function addMessage(text, type) {
+      // Clear welcome message if present
+      const welcomeMsg = chatMessages.querySelector('.welcome-message');
+      if (welcomeMsg) {
+        welcomeMsg.remove();
+      }
+      
+      const messageEl = document.createElement('div');
+      messageEl.className = `message ${type}`;
+      
       const avatar = document.createElement('div');
       avatar.className = 'message-avatar';
       avatar.textContent = type === 'user' ? '👤' : '🤖';
+      
       const content = document.createElement('div');
       content.className = 'message-content';
       content.textContent = text;
-      wrap.appendChild(avatar); wrap.appendChild(content);
-      chatMessages.appendChild(wrap);
+      
+      messageEl.appendChild(avatar);
+      messageEl.appendChild(content);
+      chatMessages.appendChild(messageEl);
+      
+      // Scroll to bottom
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function showError(msg){
-      const el = document.createElement('div');
-      el.className = 'error-message';
-      el.textContent = msg;
-      chatMessages.appendChild(el);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      setTimeout(()=>{ if(el.parentNode) el.remove(); }, 5000);
+    // ==================== CONTROLS ====================
+    
+    function toggleSpeech() {
+      speechEnabled = !speechEnabled;
+      voiceSpeakerBtn.classList.toggle('active', speechEnabled);
+      showSuccess(speechEnabled ? 'Voice responses enabled' : 'Voice responses disabled');
     }
-    function showSuccess(msg){
-      const el = document.createElement('div');
-      el.className = 'success';
-      el.textContent = msg;
-      chatMessages.appendChild(el);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-      setTimeout(()=>{ if(el.parentNode) el.remove(); }, 3000);
+
+    // ==================== UTILITY FUNCTIONS ====================
+    
+    async function checkHealth() {
+      try {
+        connectionStatus.textContent = 'Connecting...';
+        const response = await fetch('/api/health');
+        
+        if (response.ok) {
+          connectionStatus.textContent = 'Connected';
+        } else {
+          connectionStatus.textContent = 'Service Issues';
+        }
+      } catch (error) {
+        connectionStatus.textContent = 'Offline';
+      }
     }
+
+    function showError(message) {
+      const errorEl = document.createElement('div');
+      errorEl.className = 'error-message';
+      errorEl.textContent = message;
+      document.body.appendChild(errorEl);
+      
+      setTimeout(() => {
+        if (errorEl.parentNode) {
+          errorEl.remove();
+        }
+      }, 5000);
+    }
+
+    function showSuccess(message) {
+      const successEl = document.createElement('div');
+      successEl.className = 'success-message';
+      successEl.textContent = message;
+      document.body.appendChild(successEl);
+      
+      setTimeout(() => {
+        if (successEl.parentNode) {
+          successEl.remove();
+        }
+      }, 3000);
+    }
+
   </script>
 </body>
 </html>
