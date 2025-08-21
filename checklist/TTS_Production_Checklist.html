@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"/>
+<title>ODIA‑TTS — Production Ready Checklist</title>
+<style>
+  :root { --bg:#0b1220; --fg:#e6edf3; --muted:#9fb3c8; --accent:#00d4ff; }
+  html,body { background:var(--bg); color:var(--fg); font:16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial; margin:0; }
+  .page { max-width:900px; margin:40px auto; padding:24px; background:#0f172a; border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,.4);}
+  h1 { margin:0 0 8px; font-size:26px; }
+  .link { color:var(--accent);}
+  h2 { font-size:18px; margin:20px 0 6px; color:#bfe2ff; }
+  code, pre { background:#0b1220; padding:2px 6px; border-radius:6px; }
+  ul { margin:6px 0 12px 24px; }
+  li { margin:6px 0; }
+  .box { padding:10px 12px; border:1px solid #22304a; border-radius:12px; }
+  .small { color:var(--muted); font-size:13px; }
+  @media print { body{background:#fff;color:#000} .page{box-shadow:none;border:1px solid #ddd} a{color:#000} }
+</style>
+<div class="page">
+  <h1>ODIA‑TTS — PRODUCTION READY CHECKLIST</h1>
+  <p class="small">Print this page or save as PDF (Ctrl/Cmd+P).</p>
+
+  <h2>1) API Keys & Environment</h2>
+  <ul class="box">
+    <li>☐ Create <code>.env</code> from <code>.env.example</code></li>
+    <li>☐ Set <code>OPENAI_API_KEY</code> in Render → Environment (never commit secrets)</li>
+    <li>☐ Confirm <code>PORT</code> is provided by Render (don’t hardcode)</li>
+  </ul>
+
+  <h2>2) Requirements</h2>
+  <div class="box">
+    <div>☐ <b>requirements.txt</b> (one per line):</div>
+    <pre>fastapi
+uvicorn
+edge-tts
+openai</pre>
+    <div>☐ Test locally: <code>pip install -r requirements.txt</code></div>
+  </div>
+
+  <h2>3) Backend Endpoints</h2>
+  <ul class="box">
+    <li>☐ <code>/health</code> returns <code>{"status":"ok","voice":"…"}</code></li>
+    <li>☐ <code>/speak</code> validates input; returns MP3; <code>Cache-Control: no-store</code></li>
+    <li>☐ <code>/agent</code> uses OpenAI if key exists else echo fallback</li>
+    <li>☐ CORS allows your site; OPTIONS preflight handled</li>
+  </ul>
+
+  <h2>4) Logging & Limits</h2>
+  <ul class="box">
+    <li>☐ JSON logs: request_id, method, path, status, latency_ms</li>
+    <li>☐ Simple per‑IP rate limit (token bucket)</li>
+    <li>☐ Clear 5xx JSON on failures; no crashes</li>
+  </ul>
+
+  <h2>5) Frontend (agent.html)</h2>
+  <ul class="box">
+    <li>☐ Big “Talk to Lexi” button unlocks AudioContext + mic</li>
+    <li>☐ Start/Stop conversation; barge‑in ducking</li>
+    <li>☐ POST <code>/agent</code> → speak reply via <code>/speak</code></li>
+    <li>☐ Cache last 5 MP3 keys in <code>localStorage</code></li>
+  </ul>
+
+  <h2>6) Render Deployment</h2>
+  <ul class="box">
+    <li>☐ <b>render.yaml</b> uses Python runtime; build installs requirements; start uses uvicorn with <code>$PORT</code></li>
+    <li>☐ Health check path: <code>/health</code></li>
+    <li>☐ Push to GitHub main → auto‑deploy → verify <code>/health</code></li>
+  </ul>
+
+  <h2>7) CI</h2>
+  <ul class="box">
+    <li>☐ Install deps; lint (optional); basic tests</li>
+    <li>☐ Curl <code>/health</code>; POST <code>/agent</code> without key → expect echo</li>
+  </ul>
+
+  <h2>8) Smoke Test</h2>
+  <pre class="box">curl https://&lt;host&gt;/health
+curl "https://&lt;host&gt;/speak?text=Hello" -o smoke.mp3</pre>
+
+  <h2>9) Troubleshooting</h2>
+  <ul class="box">
+    <li>☐ 404 /agent → ensure route in server.py then redeploy</li>
+    <li>☐ Build fails → check requirements formatting (no stray characters)</li>
+    <li>☐ Mobile no sound → tap to unlock; disable VPN; ensure HTTPS</li>
+    <li>☐ Local port busy → change port; stop other servers</li>
+  </ul>
+
+  <p><b>Ship it →</b> <a class="link" href="https://odia-tts.onrender.com/">https://odia-tts.onrender.com/</a></p>
+</div>
+</html>

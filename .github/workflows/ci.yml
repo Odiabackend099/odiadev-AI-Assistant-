@@ -1,0 +1,19 @@
+name: CI
+on:
+  push: { branches: [ main, master ] }
+  pull_request: { branches: [ main, master ] }
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Check structure
+        run: |
+          test -f index.html
+          test -f vercel.json
+          test -f api/health.js
+          test -f api/chat.js
+          test -f api/tts.js
+          echo "✅ Structure OK"
