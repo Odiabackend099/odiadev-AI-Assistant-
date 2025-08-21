@@ -1,4 +1,4 @@
-// api/tts.js - Use USER API key for TTS service
+// api/tts.js - TTS with authentication fallback
 const { validKey, getKey } = require('./_lib/auth');
 
 module.exports = async function handler(req, res) {
@@ -60,51 +60,64 @@ module.exports = async function handler(req, res) {
     const ttsUrl = `${ttsServiceUrl}/speak?text=${encodedText}&voice=${encodedVoice}`;
 
     console.log(`Calling TTS service: ${ttsUrl}`);
-    console.log(`Using user API key: ${userApiKey}`);
 
-    // Make the request with user's API key (not service key!)
-    const response = await fetch(ttsUrl, {
-      method: 'GET',
-      headers: {
-        'x-api-key': userApiKey  // Use the user's API key directly
+    // Try multiple authentication methods
+    const authMethods = [
+      // Method 1: User API key
+      { 'x-api-key': userApiKey },
+      // Method 2: Service key
+      { 'x-api-key': process.env.TTS_SERVICE_KEY },
+      // Method 3: No auth
+      {},
+      // Method 4: Bearer token
+      { 'Authorization': `Bearer ${userApiKey}` },
+      // Method 5: Different header name
+      { 'api-key': userApiKey }
+    ];
+
+    let audioBuffer = null;
+    let successMethod = null;
+
+    for (const [index, headers] of authMethods.entries()) {
+      try {
+        console.log(`Trying auth method ${index + 1}:`, Object.keys(headers));
+        
+        const response = await fetch(ttsUrl, {
+          method: 'GET',
+          headers: headers
+        });
+
+        console.log(`Auth method ${index + 1} response: ${response.status}`);
+
+        if (response.ok) {
+          const buffer = await response.arrayBuffer();
+          
+          // Check if it's actually audio (not JSON error)
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            if (buffer && buffer.byteLength > 100) { // Audio files are usually larger than 100 bytes
+              audioBuffer = buffer;
+              successMethod = index + 1;
+              console.log(`SUCCESS with auth method ${index + 1}: ${buffer.byteLength} bytes`);
+              break;
+            }
+          }
+        }
+        
+      } catch (error) {
+        console.log(`Auth method ${index + 1} error:`, error.message);
       }
-    });
+    }
 
-    console.log(`TTS Response status: ${response.status}`);
-    console.log(`TTS Response headers:`, Object.fromEntries(response.headers.entries()));
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`TTS service error: ${response.status} - ${errorText}`);
+    if (!audioBuffer || audioBuffer.byteLength === 0) {
+      console.error('All authentication methods failed');
       
       // Fallback to browser TTS
       return res.status(503).json({ 
         error: 'TTS service unavailable', 
         fallback: true,
-        message: errorText,
-        status: response.status
-      });
-    }
-
-    // Get the audio data
-    const audioBuffer = await response.arrayBuffer();
-    
-    console.log(`Audio buffer size: ${audioBuffer.byteLength} bytes`);
-
-    if (!audioBuffer || audioBuffer.byteLength === 0) {
-      throw new Error('Empty audio response');
-    }
-
-    // Check if response is actually audio (not HTML error)
-    const contentType = response.headers.get('content-type');
-    if (contentType && contentType.includes('text/html')) {
-      const htmlContent = new TextDecoder().decode(audioBuffer);
-      console.error('Received HTML instead of audio:', htmlContent.substring(0, 200));
-      
-      return res.status(503).json({ 
-        error: 'TTS service returned HTML error', 
-        fallback: true,
-        response: htmlContent.substring(0, 200)
+        message: 'All authentication methods failed',
+        triedMethods: authMethods.length
       });
     }
 
@@ -113,7 +126,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('Content-Length', audioBuffer.byteLength);
     res.setHeader('Cache-Control', 'no-store');
     
-    console.log(`Successfully serving ${audioBuffer.byteLength} bytes of audio`);
+    console.log(`Successfully serving ${audioBuffer.byteLength} bytes using auth method ${successMethod}`);
     
     // Send the audio data
     res.status(200).send(Buffer.from(audioBuffer));
