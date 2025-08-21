@@ -6,10 +6,6 @@
       "use": "@vercel/static"
     },
     {
-      "src": "public/**",
-      "use": "@vercel/static"
-    },
-    {
       "src": "api/**/*.js",
       "use": "@vercel/node"
     }
@@ -20,12 +16,13 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/public/(.*)",
-      "dest": "/public/$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node@18"
+    }
+  }
 }
